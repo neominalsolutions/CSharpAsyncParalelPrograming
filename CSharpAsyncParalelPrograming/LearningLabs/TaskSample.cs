@@ -228,6 +228,56 @@ namespace CSharpAsyncParalelPrograming.LearningLabs
 
 
 
+    // Task iptal işlemleri ve Hata Yönetimi
+    // 1. yöntem olsun
+    public static async Task TaskCancelSample()
+    {
+      CancellationTokenSource cts = new CancellationTokenSource();
+
+
+      // Task sınıfı ile birlikte Func yada Action delegate'leri kullanarak iptal edilebilir görevler oluşturabiliriz. CancellationTokenSource, iptal işlemlerini yönetmek için kullanılır ve CancellationToken ile birlikte çalışır. CancellationToken, görevlerin iptal edilip edilmediğini kontrol etmek için kullanılır.
+
+      Task longRunningTask = Task.Run(async () =>
+      {
+        for (int i = 0; i < 10; i++)
+        {
+          if (cts.Token.IsCancellationRequested)
+          {
+            Console.WriteLine("Task iptal edildi.");
+            return;
+          }
+          Console.WriteLine($"Çalışıyor... {i}");
+          await Task.Delay(1000);
+        }
+      }, cts.Token);
+
+
+      // 3 saniye sonra iptal et
+      await Task.Delay(3000);
+      cts.Cancel();
+
+
+      try
+      {
+        await longRunningTask; // longRunningTask tamamlanana kadar bekleriz. Eğer iptal edilmişse, OperationCanceledException fırlatılır.
+      }
+      catch (OperationCanceledException) // eğer iptal işlemi gerçekleşirse bu exception fırlatılır.
+      {
+        Console.WriteLine("Task iptal edildiği için yakalandı.");
+      }
+    }
+
+
+
+
+
+    // Task Methodları (WhenAny,WhenAll,ContinueWith), ValueTask, Methodu Yapay zekaya yorumlatma işlemi 
+
+
+
+
+
+
 
   }
 }
