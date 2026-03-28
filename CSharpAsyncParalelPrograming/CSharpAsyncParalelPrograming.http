@@ -1,0 +1,10 @@
+@CSharpAsyncParalelPrograming_HostAddress = http://localhost:5299
+
+GET {{CSharpAsyncParalelPrograming_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+
+POST {{CSharpAsyncParalelPrograming_HostAddress}}/api/LearningLabs/basicThread
+Accept: application/json
