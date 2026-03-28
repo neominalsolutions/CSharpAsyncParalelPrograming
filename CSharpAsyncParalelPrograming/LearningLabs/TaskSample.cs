@@ -10,9 +10,53 @@
 
   public class TaskService
   {
-    public Task<List<UserReponse>> getUsersAsync()
+    public async Task<List<UserReponse>> getUsersAsync()
     {
-      return Task.FromResult(new List<UserReponse> { new UserReponse { Name = "Ali" }, new UserReponse { Name = "Cenk" } });
+
+      await Task.Delay(2000);
+
+
+      Console.WriteLine($"[TaskService] {Thread.CurrentThread.ManagedThreadId}");
+
+      return await Task.FromResult(new List<UserReponse> { new UserReponse { Name = "Ali" }, new UserReponse { Name = "Cenk" } });
+    }
+
+
+  
+
+    // GetAwaiter().GetResult() kodları asenkron bir çağırıyı senkron bir kod bloğu içerisinde çağırmamız gereken durumlar için yapılmıştır. 
+    public List<UserReponse> getUsers()
+    {
+
+      return Task.Run(() =>
+      {
+        Console.WriteLine($"[Blocked TaskService] {Thread.CurrentThread.ManagedThreadId}");
+
+        return new List<UserReponse> { new UserReponse { Name = "Ali" }, new UserReponse { Name = "Cenk" } };
+
+      }).GetAwaiter().GetResult();
+
+
+      // 2.Not: aşağıdaki kodda GetAwaiter().GetResult(); gibi kodu bloke eder.
+      return Task.Run(() =>
+      {
+        Console.WriteLine($"[Blocked TaskService] {Thread.CurrentThread.ManagedThreadId}");
+
+        return new List<UserReponse> { new UserReponse { Name = "Ali" }, new UserReponse { Name = "Cenk" } };
+
+      }).Result;
+
+
+      // 3.Not: Wait WaitAll gibi sonunda Async olmayan methodlarda kodu bloke der. waitAsync bloke etmez ama wait bloke eder. Böyle yazımdan da kaçınmamız gerekir.
+      Task.Run(() =>
+      {
+        Console.WriteLine($"[Blocked TaskService] {Thread.CurrentThread.ManagedThreadId}");
+
+        return new List<UserReponse> { new UserReponse { Name = "Ali" }, new UserReponse { Name = "Cenk" } };
+
+      }).Wait();
+
+
     }
 
   }

@@ -86,6 +86,7 @@ namespace CSharpAsyncParalelPrograming.Controllers
     }
 
 
+    // Await Main thread'i bloke etmez, sadece o satırdaki işlemi uyutur. O satırdaki işlem tamamlanana kadar main thread diğer işlemleri yapmaya devam eder.
     [HttpPost("taskFromResult")]
     public async Task<IActionResult> getUsersFromService()
     {
@@ -96,8 +97,10 @@ namespace CSharpAsyncParalelPrograming.Controllers
     }
 
 
-    [HttpPost("taskFromResult2")]
-    public async Task<IActionResult> getUsersFromService2()
+    // Uyarı: Servis 2 snlik bir bekleme süresi sonucunda ilgili requesti handle edebiliyor. Aşağıdaki kod hiç bir şekilde resultı beklemediği için response.IsCompleted state geçemez bu durumda istek cevap olarak yanlış sonuç döndürür. 
+
+    [HttpPost("taskFromResultWithDelay")]
+    public async Task<IActionResult> getUsersFromServiceWithDelay()
     {
       // response bu aşamada çözümlenmiş olmuyor. asenkron state de aslında dönüş oluyor
       var response =  _taskService.getUsersAsync();
@@ -134,6 +137,43 @@ namespace CSharpAsyncParalelPrograming.Controllers
     // Sıralı veritabanı operasyonlarında ise await kullanmamız gerekir. 
 
 
+
+    [HttpPost("taskFromResultWithDelayWaitResult")]
+    public async Task<IActionResult> getUsersFromServiceWaitResults(CancellationToken cancellationToken)
+    {
+
+      Console.WriteLine($"[Main Thread Id] ${Thread.CurrentThread.ManagedThreadId}");
+
+      // response bu aşamada çözümlenmiş olmuyor. asenkron state de aslında dönüş oluyor
+      var task = _taskService.getUsersAsync();
+
+      // await ile result bekletmediğimiz takdirde async state takibi yapıyoruz.
+
+      Console.WriteLine($"[Async State 1] ${task.Status}");
+
+      var response = await  task.WaitAsync(cancellationToken);
+
+      Console.WriteLine($"[Async State 2] ${task.Status}");
+
+
+      return Ok(response);
+    }
+
+
+
+    // Not: Önermiyoruz. Çünkü Taskı bloke eder.
+    [HttpPost("taskFromResultWithDelayWaitResultWithBlocked")]
+    public ActionResult taskFromResultWithDelayWaitResultWithBlocked()
+    {
+
+      Console.WriteLine($"[Main Thread Id] {Thread.CurrentThread.ManagedThreadId}");
+
+      // response bu aşamada çözümlenmiş olmuyor. asenkron state de aslında dönüş oluyor
+      // Kod Blocking hale geliyor.
+      var response = _taskService.getUsers();
+
+      return Ok(response);
+    }
 
   }
 }
