@@ -138,41 +138,5 @@ namespace CSharpAsyncParalelPrograming.Controllers
 
 
 
-    [HttpPost("taskFromResultWithDelayWaitResult")]
-    public async Task<IActionResult> getUsersFromServiceWaitResults(CancellationToken cancellationToken)
-    {
-
-      Console.WriteLine($"[Main Thread Id] ${Thread.CurrentThread.ManagedThreadId}");
-
-      // response bu aşamada çözümlenmiş olmuyor. asenkron state de aslında dönüş oluyor
-      var task = _taskService.getUsersAsync();
-
-      // await ile result bekletmediğimiz takdirde async state takibi yapıyoruz.
-
-      Console.WriteLine($"[Async State 1] ${task.Status}");
-
-      var response = await  task.WaitAsync(cancellationToken);
-
-      Console.WriteLine($"[Async State 2] ${task.Status}");
-
-
-      return Ok(response);
-    }
-
-
-    // Not: Önermiyoruz. Çünkü Taskı bloke eder.
-    [HttpPost("taskFromResultWithDelayWaitResultWithBlocked")]
-    public ActionResult taskFromResultWithDelayWaitResultWithBlocked()
-    {
-
-      Console.WriteLine($"[Main Thread Id] {Thread.CurrentThread.ManagedThreadId}");
-
-      // response bu aşamada çözümlenmiş olmuyor. asenkron state de aslında dönüş oluyor
-      // Kod Blocking hale geliyor.
-      var response = _taskService.getUsers();
-
-      return Ok(response);
-    }
-
   }
 }
