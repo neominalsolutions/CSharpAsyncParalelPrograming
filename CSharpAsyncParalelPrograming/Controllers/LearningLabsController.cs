@@ -137,6 +137,31 @@ namespace CSharpAsyncParalelPrograming.Controllers
     // Sıralı veritabanı operasyonlarında ise await kullanmamız gerekir. 
 
 
+    // Task Cancelation ve Task Exception Örnekleri
+
+    [HttpPost("taskCancelSample")]
+    public async Task<IActionResult> TaskCancelSample()
+    {
+      await LearningLabs.TaskSample.TaskCancelSample();
+
+      return Ok("TaskCancelSample");
+
+    }
+
+
+    // Client uzun süren isteği iptal edersek
+    // Web uygulamalarında iptal sinyali CancellationToken  cancellationToken
+    [HttpGet("ClientCancelRequest")]
+    public async Task<IActionResult> ClientCancelRequest(CancellationToken  cancellationToken)
+    {
+
+      await _taskService.getUsersAsync(cancellationToken);
+
+      return Ok("TaskCancelSample");
+
+    }
+
+
 
   }
 }
