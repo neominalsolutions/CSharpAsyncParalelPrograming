@@ -1,6 +1,7 @@
 ﻿using CSharpAsyncParalelPrograming.LearningLabs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace CSharpAsyncParalelPrograming.Controllers
 {
@@ -193,9 +194,9 @@ namespace CSharpAsyncParalelPrograming.Controllers
     [HttpPost("taskExceptionSampleV2")]
     public async Task<IActionResult> TaskExceptionSamplV2()
     {
-      
 
-      var taskState =   LearningLabs.TaskSample.TaskExceptionSample();
+
+      var taskState = LearningLabs.TaskSample.TaskExceptionSample();
 
       // Önerilmeyen örnek
       try
@@ -229,7 +230,6 @@ namespace CSharpAsyncParalelPrograming.Controllers
           Console.WriteLine($"[Error3]  ${task.Exception.Message};");
         }
 
-
       });
 
 
@@ -237,6 +237,72 @@ namespace CSharpAsyncParalelPrograming.Controllers
       return Ok("TaskExceptionSample");
 
     }
+
+
+    [HttpPost("TaskWhenAll")]
+    public async Task<IActionResult> TaskWhenAll()
+    {
+
+      var response = await LearningLabs.TaskSample.TaskWhenAll();
+
+      return Ok(response);
+    }
+
+    [HttpPost("TaskWhenAny")]
+    public async Task<IActionResult> TaskWhenAny()
+    {
+
+      var response = await LearningLabs.TaskSample.TaskWhenAny();
+
+      return Ok(response);
+    }
+
+
+
+    [HttpPost("BasicParallelFor")]
+    public IActionResult BasicParallelFor()
+    {
+
+       LearningLabs.ParalelProgramingSample.BasicParallelFor();
+
+      return Ok();
+    }
+
+    [HttpPost("ParalelForeachBasis")]
+    public IActionResult ParalelForeachBasis()
+    {
+
+      LearningLabs.ParalelProgramingSample.ParalelForeachBasis();
+
+      return Ok();
+    }
+
+
+    [HttpPost("ParalelForWithThreadLocalState")]
+    public IActionResult ParalelForWithThreadLocalState()
+    {
+
+      LearningLabs.ParalelProgramingSample.ParalelForWithThreadLocalState();
+
+      return Ok();
+    }
+
+
+    [HttpPost("ParalelInvokeSample")]
+    public IActionResult ParalelInvokeSample()
+    {
+
+      LearningLabs.ParalelProgramingSample.ParalelInvokeSample();
+
+      return Ok();
+    }
+
+
+    
+
+
+
+
 
 
 
