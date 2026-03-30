@@ -263,7 +263,7 @@ namespace CSharpAsyncParalelPrograming.Controllers
     public IActionResult BasicParallelFor()
     {
 
-       LearningLabs.ParalelProgramingSample.BasicParallelFor();
+      LearningLabs.ParalelProgramingSample.BasicParallelFor();
 
       return Ok();
     }
@@ -297,15 +297,23 @@ namespace CSharpAsyncParalelPrograming.Controllers
       return Ok();
     }
 
+    [HttpPost("ParalelForAsyncSample")]
+    public async Task<IActionResult> ParalelForAsyncSample()
+    {
+      await LearningLabs.ParalelProgramingSample.ParalelForAsyncSample();
 
-    
+      return Ok();
+    }
 
 
 
+    [HttpPost("PLINQSample")]
+    public IActionResult PLINQSample()
+    {
+      LearningLabs.ParalelProgramingSample.PLINQSample();
 
-
-
-
+      return Ok();
+    }
 
   }
 }

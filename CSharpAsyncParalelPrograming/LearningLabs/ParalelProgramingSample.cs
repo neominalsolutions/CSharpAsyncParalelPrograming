@@ -192,6 +192,159 @@ namespace CSharpAsyncParalelPrograming.LearningLabs
     // paralelForAsync, ParalelForException Handling, PLINQ ile ilgili kısım, Concurency Collections, Race Conditions
 
 
+    public static async Task ParalelForAsyncSample()
+    {
+      // Paralel.ForAsync, belirli bir aralıkta işlemleri paralel olarak yürütmek için kullanılır. Bu yöntem, genellikle döngülerdeki işlemleri hızlandırmak için tercih edilir. Örneğin, büyük bir dizi üzerinde işlem yaparken, her bir öğeyi paralel olarak işleyebilirsiniz. Ancak, bu yöntem asenkron işlemlerle çalışırken daha uygun olabilir.
+      Stopwatch sp = Stopwatch.StartNew();
+
+      using CancellationTokenSource cts = new CancellationTokenSource();
+      // cts.CancelAfter(3000); // 3 saniye sonra iptal uygula.);
+
+      ParallelOptions parallelOptions = new ParallelOptions();
+      parallelOptions.CancellationToken = cts.Token;
+
+
+
+      try
+      {
+
+        // Doğru Kullanım
+        await Parallel.ForAsync(0, 1000000, parallelOptions, async (i, cancellationToken) =>
+        {
+          // Cpu-bound işlemler
+          double result = Math.Sqrt(i) * Math.PI * Math.Pow(2, i + 1);
+          // Ağ gecikmesi simülasyonu
+
+          await SampleTaskAsync(i); // asenkron kod bloğunda hata oluşmalı.
+          // await ile asenkron bir iş yapmamızıa da imkan sağlıyor.
+        });
+
+
+        // Not: Kodu yukarıdaki şekilde yazmayıp, aşağıdaki formatta yazarsak, eğer task içerisinde bir isnai durum (exception) geldiğinde biz bunu doğru bir şekilde yakalayamayız.
+        // Yanlış Kullanım
+        //Parallel.For(0, 1000000, parallelOptions, async i =>
+        //{
+        //  // Cpu-bound işlemler
+        //  double result = Math.Sqrt(i) * Math.PI * Math.Pow(2, i + 1);
+        //  // Ağ gecikmesi simülasyonu
+
+        //  await SampleTaskAsync(i); // asenkron kod bloğunda hata oluşmalı.
+        //  // await ile asenkron bir iş yapmamızıa da imkan sağlıyor.
+        //});
+
+
+        sp.Stop();
+
+        Console.WriteLine($"Paralel For Async Sp Time {sp.ElapsedMilliseconds}");
+
+      }
+      catch (OperationCanceledException ex)
+      {
+        Console.WriteLine("İptal Edildi: " + ex.Message);
+      }
+      catch (InvalidOperationException ex)
+      {
+        // Modern .NET'te Parallel.ForAsync exception'ları AggregateException içinde wrap etmez
+        Console.WriteLine("Hata Oluştu: " + ex.Message);
+      }
+      catch (Exception ex)
+      {
+        // Diğer tüm exception'ları yakala
+        Console.WriteLine("Beklenmeyen Hata: " + ex.Message);
+      }
+
+    }
+
+    public async static Task SampleTaskAsync(int i)
+    {
+      int gecikme = Random.Shared.Next(10, 100); // 10 ile 100 ms arasında rastgele gecikme
+      await Task.Delay(gecikme); // Simulate asynchronous work
+      Console.WriteLine($"İşlem {i} - Thread ID: {Thread.CurrentThread.ManagedThreadId}");
+
+      // Eğer Task içerisinde bir exception durumu meydana gelirse.
+      if (i > 15)
+      {
+        throw new InvalidOperationException("Task hata oluşturdu");
+      }
+
+
+
+    }
+
+
+
+    // PLINQ -> Parallel LINQ, LINQ sorgularını paralel olarak yürütmek için kullanılan bir özelliktir. PLINQ, büyük veri setleri üzerinde sorguları hızlandırmak için kullanılabilir. Örneğin, bir dizi üzerinde filtreleme, sıralama veya gruplama işlemlerini paralel olarak gerçekleştirebilirsiniz. PLINQ, sorguların bağımsız olduğu durumlarda performansı artırabilir, ancak dikkatli yönetilmezse yarış koşulları ve diğer sorunlara yol açabilir. Bu nedenle, PLINQ kullanırken senkronizasyon ve hata yönetimi konularına dikkat etmek önemlidir.
+
+
+    // Biz veritabanında paralel sorgu çalıştırmıyoruz, biz program tarafında veritabanında çekilen milyonlarca veriyi, program tarafında parlale olarak işlemeye çalışıyoruz. 
+    // PLINQ kullanınca, veri işlem işlemleri performans amaçlı, varsayılan olarak sırasız çalışır. asOrdered zorlarsak performanstan ödün veriririz. 
+
+    public static void PLINQSample()
+    {
+      using CancellationTokenSource cts = new CancellationTokenSource();
+      cts.CancelAfter(300);
+
+
+      // milyonuc verilen ramde tek bir thread de işlenmesi listede bazı concurency problemleri oluşturabilir. Bu sebeple paralel olarak işleyelim. ConcurentBag gibi bir yapı kullanarak, threadlerin birbirlerinin sonuçlarını bozmasını engelleyebiliriz.
+      List<Employee> employees = new List<Employee>();
+      for (int i = 0; i < 100000; i++)
+      {
+        employees.Add(new Employee
+        {
+          Id = i,
+          Name = $"Employee {i}",
+          Salary = Random.Shared.Next(3000, 10000)
+        });
+      }
+
+      try
+      {
+        // PLINQ kullanarak yüksek maaşlı çalışanları filtreleyelim.
+        // AsParallel() sorgu birden fazla thread tarafında işlenecek
+        // Not: Küçük veri kümlerinde Default ile paralel uygun değilse tek bir thread üzerinde de işi yürütebilir. ParallelExecutionMode.ForceParallelism seçerek paralel olamaya zorlamış oluyoruz. 
+        var highSalaryEmployees = employees.AsParallel().WithDegreeOfParallelism(3).WithExecutionMode(ParallelExecutionMode.ForceParallelism).WithCancellation(cts.Token)
+                                           .Where(e => e.Salary > 8000);
+
+        // Select gibi burada veriyi manüpüle edebiliriz. Paralel olarak veriyi işlememizde gerekebilir.
+        highSalaryEmployees.ForAll((e) =>
+        {
+          e.Name = e.Name.ToUpper(); // isimleri büyük harfe çevirelim.
+
+          // Sorgu çalışırken çekilirken where kriter koyularuken olabilir. SQL exception veya Forall içerisinde veri manupluasyonu yapılırken.
+         if(e.Id > 10000)
+          {
+            throw new Exception("Hata");
+          }
+
+          Console.WriteLine($"Çalışan: {e.Name}, Maaş: {e.Salary} Id: {e.Id}");
+          Console.WriteLine($"[Thread]" + Thread.CurrentThread.ManagedThreadId);
+
+
+        });
+      }
+      catch (OperationCanceledException ex)
+      {
+        Console.WriteLine(ex.Message);
+      }
+      catch (AggregateException ae)
+      {
+        Console.WriteLine("Exception Count" +  ae.InnerExceptions.Count());
+      }
+
+    }
+
+
+    public class Employee
+    {
+      public int Id { get; set; }
+      public string Name { get; set; }
+      public decimal Salary { get; set; }
+    }
+
+
+
+    // Farklı Threadler ile çalışırken Normal Enumarable, List gibi listelerin içerisine eleman ekleme çıkarma durumları da ciddi sorunlara neden olabilir bu durumda Concurent Collectionslardan yararlanmalıyız. Bunuda anlatalım.
+
 
   }
 }
