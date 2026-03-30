@@ -354,7 +354,50 @@ namespace CSharpAsyncParalelPrograming.Controllers
     }
 
 
-    
+    [HttpPost("ReaderWriterLockSlimSample")]
+    public async Task<IActionResult> ReaderWriterLockSlimSample()
+    {
+      LearningLabs.RaceConditionSample.ReaderWriterLockSlimSample();
+
+      return Ok();
+    }
+
+
+    [HttpPost("ConcurrentDictionarySample")]
+    public async Task<IActionResult> ConcurrentDictionarySample()
+    {
+      LearningLabs.RaceConditionSample.ConcurrentDictionarySample();
+
+      return Ok();
+    }
+
+
+    [HttpPost("ConcurentBag")]
+    public async Task<IActionResult> ConcurentBag()
+    {
+      LearningLabs.RaceConditionSample.ConcurrentBagSample();
+
+      return Ok();
+    }
+
+
+
+    [HttpPost("NormalDictionarySample")]
+    public async Task<IActionResult> NormalDictionarySample()
+    {
+      LearningLabs.RaceConditionSample.NormalDictionarySample();
+
+      return Ok();
+    }
+
+
+
+
+
+
+
+
+
 
 
   }
