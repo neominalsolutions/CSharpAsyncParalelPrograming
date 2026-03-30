@@ -315,5 +315,47 @@ namespace CSharpAsyncParalelPrograming.Controllers
       return Ok();
     }
 
+
+    // Race Condition
+
+
+    [HttpPost("RaceConditionDemo")]
+    public IActionResult RaceConditionDemo()
+    {
+      LearningLabs.RaceConditionSample.InterlockDemo();
+
+      return Ok();
+    }
+
+
+    [HttpPost("MonitorDemo2")]
+    public IActionResult MonitorDemo2()
+    {
+      LearningLabs.RaceConditionSample.MonitorDemo2();
+
+      return Ok();
+    }
+
+    [HttpPost("MutexDemo")]
+    public IActionResult MutexDemo()
+    {
+      LearningLabs.RaceConditionSample.MutexDemo();
+
+      return Ok();
+    }
+
+
+    [HttpPost("SemaphoreSlimSample")]
+    public async Task<IActionResult> SemaphoreSlimSample()
+    {
+      await LearningLabs.RaceConditionSample.SemaphoreSlimSample();
+
+      return Ok();
+    }
+
+
+    
+
+
   }
 }
